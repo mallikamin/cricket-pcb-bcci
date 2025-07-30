@@ -1,0 +1,459 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Revenue Comparisons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            font-family: 'Arial', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 100;
+            color: #ffffff;
+            margin-bottom: 4rem;
+            letter-spacing: 0.15em;
+            opacity: 0;
+            animation: fadeInTitle 2s ease-out 0.5s forwards;
+            text-align: center;
+            transition: all 1s ease-in-out;
+        }
+
+        .revenue-comparison {
+            display: flex;
+            gap: 8rem;
+            align-items: flex-end;
+            position: relative;
+            transition: all 1s ease-in-out;
+        }
+
+        .league {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .bar-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .bar {
+            width: 80px;
+            background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.1) 100%);
+            border: 2px solid;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            transition: all 1s ease-in-out;
+        }
+
+        .left-bar {
+            border-color: #00d4ff;
+        }
+
+        .right-bar {
+            border-color: #ff6b35;
+        }
+
+        .bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            animation: shimmer 4s ease-in-out 3s infinite;
+        }
+
+        .left-bar::before {
+            background: linear-gradient(180deg, 
+                rgba(0,212,255,0.3) 0%, 
+                rgba(0,212,255,0.1) 50%, 
+                transparent 100%);
+        }
+
+        .right-bar::before {
+            background: linear-gradient(180deg, 
+                rgba(255,107,53,0.3) 0%, 
+                rgba(255,107,53,0.1) 50%, 
+                transparent 100%);
+        }
+
+        .league-name {
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            animation: fadeInLeague 1.5s ease-out 2.5s forwards;
+            transition: all 1s ease-in-out;
+        }
+
+        .revenue-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
+            opacity: 0;
+            animation: fadeInRevenue 1.5s ease-out 3s forwards;
+            transition: all 1s ease-in-out;
+        }
+
+        .left-amount {
+            color: #00d4ff;
+        }
+
+        .right-amount {
+            color: #ff6b35;
+        }
+
+        .multiplier {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: #888;
+            background: rgba(0,0,0,0.8);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            animation: fadeInMultiplier 1.5s ease-out 4s forwards;
+            transition: all 1s ease-in-out;
+        }
+
+        .floating-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: float 15s linear infinite;
+        }
+
+        .particle:nth-child(odd) {
+            background: rgba(0,212,255,0.4);
+        }
+
+        .particle:nth-child(even) {
+            background: rgba(255,107,53,0.4);
+        }
+
+        .progress-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .progress-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: all 0.5s ease;
+        }
+
+        .progress-dot.active {
+            background: #ffffff;
+            border-color: #ffffff;
+        }
+
+        @keyframes fadeInTitle {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes growBar {
+            to {
+                transform: scaleY(1);
+            }
+            from {
+                transform: scaleY(0);
+            }
+        }
+
+        @keyframes fadeInLeague {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                transform: translateY(10px);
+            }
+        }
+
+        @keyframes fadeInRevenue {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                transform: translateY(15px);
+            }
+        }
+
+        @keyframes fadeInMultiplier {
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .title {
+                font-size: 1.6rem;
+            }
+            .revenue-comparison {
+                gap: 4rem;
+            }
+            .revenue-amount {
+                font-size: 2rem;
+            }
+            .league-name {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <h1 class="title" id="title">PSL vs IPL REVENUE</h1>
+        
+        <div class="revenue-comparison">
+            <div class="league">
+                <div class="bar-container">
+                    <div class="bar left-bar" id="leftBar"></div>
+                </div>
+                <div class="league-name" id="leftName">PSL</div>
+                <div class="revenue-amount left-amount" id="leftAmount">$12.1M</div>
+            </div>
+            
+            <div class="league">
+                <div class="bar-container">
+                    <div class="bar right-bar" id="rightBar"></div>
+                </div>
+                <div class="league-name" id="rightName">IPL</div>
+                <div class="revenue-amount right-amount" id="rightAmount">$662M</div>
+            </div>
+        </div>
+        
+        <div class="multiplier" id="multiplier">55x LARGER</div>
+        
+        <div class="progress-indicator">
+            <div class="progress-dot active" id="dot1"></div>
+            <div class="progress-dot" id="dot2"></div>
+        </div>
+    </div>
+
+    <script>
+        // Data for both comparisons
+        const comparisons = [
+            {
+                title: "PSL vs IPL REVENUE",
+                leftName: "PSL",
+                rightName: "IPL",
+                leftAmount: "$12.1M",
+                rightAmount: "$662M",
+                leftHeight: "120px",
+                rightHeight: "600px",
+                multiplier: "55x LARGER"
+            },
+            {
+                title: "PCB vs BCCI REVENUE",
+                leftName: "PCB",
+                rightName: "BCCI",
+                leftAmount: "$57M",
+                rightAmount: "$1.1B",
+                leftHeight: "180px",
+                rightHeight: "600px",
+                multiplier: "19x LARGER"
+            }
+        ];
+
+        let currentComparison = 0;
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 25;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initial bar animation
+        function animateBars() {
+            const leftBar = document.getElementById('leftBar');
+            const rightBar = document.getElementById('rightBar');
+            const comparison = comparisons[currentComparison];
+            
+            leftBar.style.height = comparison.leftHeight;
+            rightBar.style.height = comparison.rightHeight;
+            leftBar.style.transform = 'scaleY(0)';
+            rightBar.style.transform = 'scaleY(0)';
+            leftBar.style.transformOrigin = 'bottom';
+            rightBar.style.transformOrigin = 'bottom';
+            
+            setTimeout(() => {
+                leftBar.style.animation = 'growBar 2s ease-out forwards';
+            }, 1500);
+            
+            setTimeout(() => {
+                rightBar.style.animation = 'growBar 2s ease-out forwards';
+            }, 2000);
+        }
+
+        // Update comparison data
+        function updateComparison() {
+            const comparison = comparisons[currentComparison];
+            
+            document.getElementById('title').textContent = comparison.title;
+            document.getElementById('leftName').textContent = comparison.leftName;
+            document.getElementById('rightName').textContent = comparison.rightName;
+            document.getElementById('leftAmount').textContent = comparison.leftAmount;
+            document.getElementById('rightAmount').textContent = comparison.rightAmount;
+            document.getElementById('multiplier').textContent = comparison.multiplier;
+            
+            // Update progress dots
+            document.getElementById('dot1').classList.toggle('active', currentComparison === 0);
+            document.getElementById('dot2').classList.toggle('active', currentComparison === 1);
+            
+            // Reset and animate bars
+            const leftBar = document.getElementById('leftBar');
+            const rightBar = document.getElementById('rightBar');
+            
+            leftBar.style.animation = 'none';
+            rightBar.style.animation = 'none';
+            leftBar.style.transform = 'scaleY(0)';
+            rightBar.style.transform = 'scaleY(0)';
+            
+            setTimeout(() => {
+                leftBar.style.height = comparison.leftHeight;
+                rightBar.style.height = comparison.rightHeight;
+                
+                setTimeout(() => {
+                    leftBar.style.animation = 'growBar 2s ease-out forwards';
+                }, 500);
+                
+                setTimeout(() => {
+                    rightBar.style.animation = 'growBar 2s ease-out forwards';
+                }, 1000);
+            }, 100);
+        }
+
+        // Pulse effect on bars
+        function addPulseEffect() {
+            const bars = document.querySelectorAll('.bar');
+            setInterval(() => {
+                bars.forEach(bar => {
+                    bar.style.boxShadow = `0 0 30px ${bar.classList.contains('left-bar') ? '#00d4ff' : '#ff6b35'}40`;
+                    setTimeout(() => {
+                        bar.style.boxShadow = 'none';
+                    }, 1000);
+                });
+            }, 8000);
+        }
+
+        // Switch between comparisons
+        function switchComparison() {
+            currentComparison = (currentComparison + 1) % 2;
+            updateComparison();
+        }
+
+        // Initialize
+        createParticles();
+        animateBars();
+        setTimeout(addPulseEffect, 4000);
+
+        // Auto-switch every 8 seconds
+        setTimeout(() => {
+            setInterval(switchComparison, 8000);
+        }, 6000);
+    </script>
+</body>
+</html>
