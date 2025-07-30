@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -174,11 +174,63 @@
       border-color: #fff;
     }
 
+    .sources-container {
+      display: none;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .sources-container.active {
+      display: flex;
+      opacity: 0;
+      animation: fadeInSources 2s ease-out 0.5s forwards;
+    }
+
+    .source-item {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 15px;
+      padding: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .source-title {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    .source-link {
+      color: #00d4ff;
+      text-decoration: none;
+      font-size: 1rem;
+      word-break: break-all;
+      transition: color 0.3s ease;
+    }
+
+    .source-link:hover {
+      color: #33e0ff;
+      text-decoration: underline;
+    }
+
+    .source-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-top: 0.5rem;
+      border: 2px solid rgba(255,107,53,0.3);
+    }
+
     @keyframes fadeInTitle { from {opacity: 0; transform: translateY(-20px);} to {opacity: 1; transform: translateY(0);} }
     @keyframes growBarHorizontal { from {transform: scaleX(0);} to {transform: scaleX(1);} }
     @keyframes fadeInLeague { from {opacity: 0; transform: translateX(-20px);} to {opacity: 1; transform: translateX(0);} }
     @keyframes fadeInRevenue { from {opacity: 0; transform: translateY(15px);} to {opacity: 1; transform: translateY(0);} }
     @keyframes fadeInMultiplier { from {opacity: 0; transform: scale(0.8);} to {opacity: 1; transform: scale(1);} }
+    @keyframes fadeInSources { from {opacity: 0; transform: translateY(30px);} to {opacity: 1; transform: translateY(0);} }
     @keyframes shimmerHorizontal { 0%,100%{opacity:0;} 50%{opacity:1;} }
 
     @media (max-width: 768px) {
@@ -230,16 +282,39 @@
       </div>
     </div>
     
+    <div class="sources-container" id="sourcesContainer">
+      <div class="source-item">
+        <div class="source-title">PCB Financial Data</div>
+        <a href="https://www.pcb.com.pk/downloads/PCB%20Financial%20Statements%20FY%202022-23.pdf" 
+           target="_blank" 
+           class="source-link">
+          PCB Financial Statements FY 2022-23
+        </a>
+      </div>
+      <div class="source-item">
+        <div class="source-title">BCCI Revenue Data</div>
+        <img src="https://mallikamin.github.io/cricket-pcb-bcci/images/BCCI.jpg" 
+             alt="BCCI Revenue Data" 
+             class="source-image"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div style="display:none; color: #ff6b35; font-style: italic;">
+          Image: BCCI Revenue Data (Upload BCCI.jpg to your GitHub repository)
+        </div>
+      </div>
+    </div>
+    
     <div class="progress-indicator">
       <div class="progress-dot active" id="dot1"></div>
       <div class="progress-dot" id="dot2"></div>
+      <div class="progress-dot" id="dot3"></div>
     </div>
   </div>
 
   <script>
     const comparisons = [
       { title: "PSL vs IPL REVENUE", leftName: "PSL", rightName: "IPL", leftAmount: "$12.1M", rightAmount: "$662M", leftWidth: "12%", rightWidth: "100%", multiplier: "55x LARGER" },
-      { title: "PCB vs BCCI REVENUE", leftName: "PCB", rightName: "BCCI", leftAmount: "$57M", rightAmount: "$1.1B", leftWidth: "25%", rightWidth: "100%", multiplier: "19x LARGER" }
+      { title: "PCB vs BCCI REVENUE", leftName: "PCB", rightName: "BCCI", leftAmount: "$57M", rightAmount: "$1.1B", leftWidth: "25%", rightWidth: "100%", multiplier: "19x LARGER" },
+      { title: "SOURCES", leftName: "", rightName: "", leftAmount: "", rightAmount: "", leftWidth: "0%", rightWidth: "0%", multiplier: "", isSourceSlide: true }
     ];
     let currentComparison = 0;
 
@@ -271,18 +346,36 @@
 
     function updateComparison() {
       const comparison = comparisons[currentComparison];
+      const revenueComp = document.querySelector('.revenue-comparison');
+      const sourcesContainer = document.getElementById('sourcesContainer');
+      
       document.getElementById('title').textContent = comparison.title;
-      document.getElementById('leftName').textContent = comparison.leftName;
-      document.getElementById('rightName').textContent = comparison.rightName;
-      document.getElementById('leftAmount').textContent = comparison.leftAmount;
-      document.getElementById('rightAmount').textContent = comparison.rightAmount;
-      document.getElementById('multiplier').textContent = comparison.multiplier;
+      
+      if (comparison.isSourceSlide) {
+        // Show sources slide
+        revenueComp.style.display = 'none';
+        sourcesContainer.classList.add('active');
+        document.querySelector('.multiplier-container').style.display = 'none';
+      } else {
+        // Show regular comparison slide
+        revenueComp.style.display = 'flex';
+        sourcesContainer.classList.remove('active');
+        document.querySelector('.multiplier-container').style.display = 'flex';
+        
+        document.getElementById('leftName').textContent = comparison.leftName;
+        document.getElementById('rightName').textContent = comparison.rightName;
+        document.getElementById('leftAmount').textContent = comparison.leftAmount;
+        document.getElementById('rightAmount').textContent = comparison.rightAmount;
+        document.getElementById('multiplier').textContent = comparison.multiplier;
+        
+        document.getElementById('leftBar').style.animation = 'none';
+        document.getElementById('rightBar').style.animation = 'none';
+        setTimeout(animateBars, 100);
+      }
+      
       document.getElementById('dot1').classList.toggle('active', currentComparison === 0);
       document.getElementById('dot2').classList.toggle('active', currentComparison === 1);
-      
-      document.getElementById('leftBar').style.animation = 'none';
-      document.getElementById('rightBar').style.animation = 'none';
-      setTimeout(animateBars, 100);
+      document.getElementById('dot3').classList.toggle('active', currentComparison === 2);
     }
 
     function switchComparison() {
